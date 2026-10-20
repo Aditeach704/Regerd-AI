@@ -106,7 +106,7 @@
       flex-direction: column;
       position: relative;
       height: 100%;
-      min-width: 0; /* Prevents child flex element overflows */
+      min-width: 0;
       background: #ffffff;
     }
 
@@ -181,7 +181,7 @@
       max-width: 500px;
     }
 
-    /* Messages & Code Formatting */
+    /* Messages & Formatting */
     .msg-row {
       display: flex;
       gap: 12px;
@@ -244,7 +244,6 @@
       font-size: 0.88rem;
     }
 
-    /* CODE BOX FIT & COPY BUTTON FIX */
     .code-block-wrapper {
       position: relative;
       margin: 12px 0;
@@ -289,10 +288,10 @@
       color: #f8fafc;
       padding: 14px 16px;
       margin: 0;
-      font-family: Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace;
+      font-family: Consolas, Monaco, "Andale Mono", monospace;
       font-size: 0.85rem;
       overflow-x: auto;
-      white-space: pre-wrap; /* Forces code to wrap inside mobile screen */
+      white-space: pre-wrap;
       word-break: break-all;
       max-width: 100%;
     }
@@ -349,7 +348,6 @@
       cursor: not-allowed;
     }
 
-    /* Typing Indicator */
     .typing-dots span {
       display: inline-block;
       width: 6px;
@@ -376,7 +374,6 @@
       z-index: 15;
     }
 
-    /* Mobile Responsive Overrides */
     @media (max-width: 768px) {
       body {
         background-color: #000000;
@@ -430,7 +427,6 @@
     
     <div class="drawer-overlay" id="drawerOverlay" onclick="toggleSidebar()"></div>
 
-    <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
       <button class="new-chat-btn" onclick="startNewChat(); closeMobileDrawer();">
         <span>+</span> New Project
@@ -439,7 +435,6 @@
       <div class="chat-history-list" id="historyList"></div>
     </div>
 
-    <!-- Main Workspace -->
     <div class="main-view">
       <div class="app-header">
         <button class="menu-toggle-btn" onclick="toggleSidebar()">☰</button>
@@ -450,7 +445,6 @@
         <button class="menu-toggle-btn" onclick="startNewChat()" style="font-size: 1.2rem;">✏️</button>
       </div>
 
-      <!-- Chat Stream -->
       <div class="chat-container" id="chatContainer">
         <div class="welcome-hero" id="welcomeHero">
           <h1>Welcome to Regerd AI</h1>
@@ -458,7 +452,6 @@
         </div>
       </div>
 
-      <!-- Input Bar -->
       <div class="input-bar-container">
         <input type="text" id="userInput" placeholder="Ask Regerd AI to write code, design layout..." onkeypress="handleKeyPress(event)" />
         <button id="sendBtn" class="send-btn" onclick="sendMessage()">
@@ -569,7 +562,6 @@
       autoScroll();
     }
 
-    // Copy Code to Clipboard Function
     function copyCode(button) {
       const wrapper = button.closest('.code-block-wrapper');
       const codeElement = wrapper.querySelector('code');
@@ -588,16 +580,13 @@
       });
     }
 
-    // Fixed Markdown Parser (Proper Code Escaping & Wrapping)
     function parseMarkdown(text) {
       if (!text) return '';
 
       let cleaned = text.replace(/(User Safety:\s*\w+|Response Safety:\s*\w+)/gi, '').trim();
 
-      // Store code blocks temporarily to prevent inner HTML parsing errors
       const codeBlocks = [];
       cleaned = cleaned.replace(/```([\s\S]*?)```/g, function(match, codeContent) {
-        // Escape HTML entities inside code
         const safeCode = codeContent.trim()
           .replace(/&/g, "&amp;")
           .replace(/</g, "&lt;")
@@ -616,13 +605,11 @@
         return placeholder;
       });
 
-      // Escape non-code block content
       let escaped = cleaned
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;");
 
-      // Apply formatting to regular text
       escaped = escaped.replace(/`([^`]+)`/g, '<code>$1</code>');
       escaped = escaped.replace(/^### (.*$)/gim, '<h3>$1</h3>');
       escaped = escaped.replace(/^## (.*$)/gim, '<h2>$1</h2>');
@@ -633,7 +620,6 @@
       escaped = escaped.replace(/<\/ul>\n<ul>/g, '');
       escaped = escaped.replace(/\n/g, '<br>');
 
-      // Restore code blocks back into place
       codeBlocks.forEach((block, index) => {
         escaped = escaped.replace(`__CODE_BLOCK_${index}__`, block);
       });
@@ -713,7 +699,9 @@
           method: "POST",
           headers: {
             "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "HTTP-Referer": window.location.origin,
+            "X-Title": "Regerd AI"
           },
           body: JSON.stringify({
             model: MODEL_NAME,
@@ -728,7 +716,7 @@
           botContentDiv.innerHTML = parseMarkdown(reply);
           activeChat.messages.push({ role: 'bot', content: reply });
         } else {
-          const err = data.error?.message || "Response parsing issue.";
+          const err = data.error?.message || "Response error.";
           botContentDiv.innerHTML = `<span>Error: ${err}</span>`;
           activeChat.messages.push({ role: 'bot', content: `Error: ${err}` });
         }
@@ -749,4 +737,5 @@
     }
   </script>
 </body>
-</html>
+  </html>
+  
